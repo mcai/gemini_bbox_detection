@@ -3,7 +3,7 @@ import json
 from typing import List, Optional
 import os
 
-import google.generativeai as genai
+from google import genai
 import numpy as np
 import PIL.Image
 import supervision as sv
@@ -37,7 +37,7 @@ def parse_response(response, size, classes: Optional[List[str]] = None):
         print(response.text)
         return sv.Detections(xyxy=np.array([]), class_id=np.array([]))
 
-def run_detection(model, image_path, classes):
+def run_detection(client: genai.Client, model, image_path, classes):
     PROMPT = PROMPT_TEMPLATE.format(", ".join(classes))
 
     try:
@@ -46,7 +46,10 @@ def run_detection(model, image_path, classes):
         print(f"Error: Unable to open image file {image_path}. Unsupported format.")
         return None, None
 
-    response = model.generate_content([PROMPT, image])
+    response = client.models.generate_content(
+        model=model,
+        contents=[PROMPT, image]
+    )
     detections = parse_response(response, image.size, classes)
 
     label_annotator = sv.LabelAnnotator(text_color=sv.Color.BLACK)
@@ -70,8 +73,7 @@ def save_json_result(detections, output_path):
         json.dump(result, f, indent=2)
 
 def main(args):
-    genai.configure(api_key=args.google_api_key)
-    model = genai.GenerativeModel(model_name=args.model)
+    client = genai.Client(api_key=args.google_api_key)
 
     # Create output directory if it doesn't exist
     os.makedirs("output", exist_ok=True)
@@ -83,7 +85,7 @@ def main(args):
     for image_file in image_files:
         input_path = os.path.join(args.input_folder, image_file)
         print(f"Processing {input_path}...")
-        annotated_image, detections = run_detection(model, input_path, args.classes)
+        annotated_image, detections = run_detection(client, args.model, input_path, args.classes)
         
         if annotated_image is None:
             continue

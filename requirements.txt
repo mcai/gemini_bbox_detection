@@ -1,6 +1,6 @@
 roboflow
 supervision==0.22.0
-google-generativeai
+google-genai
 pillow
 numpy
 tqdm
