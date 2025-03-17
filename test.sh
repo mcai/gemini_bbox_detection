@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the Gemini API key
-GEMINI_API_KEY="AIzaSyBsP3zw3aqlO85YyeDhFpP4w6DLhck1OHk"
+GEMINI_API_KEY="xxx"
 
 # Define the MODEL variable
 # Uncomment the model you want to use
